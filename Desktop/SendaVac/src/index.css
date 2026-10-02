@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body {
+    @apply bg-[#f4f7fb] text-slate-800 antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Soporte modo oscuro para inputs con autocompletado del navegador (Chrome, Edge, Safari) */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #ffffff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark select:-webkit-autofill,
+.dark select:-webkit-autofill:hover,
+.dark select:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+/* Scrollbar azul brillante eléctrico del Sidebar idéntico a SendaFact */
+.sidebar-scroll {
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: #2563eb #f1f5f9;
+}
+
+.dark .sidebar-scroll {
+  scrollbar-color: #3b82f6 #0b1329;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+  margin: 4px 0;
+}
+
+.dark .sidebar-scroll::-webkit-scrollbar-track {
+  background: #0b1329;
+  border-radius: 9999px;
+  margin: 4px 0;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 9999px;
+}
+
+.dark .sidebar-scroll::-webkit-scrollbar-thumb {
+  background: #3b82f6;
+  border-radius: 9999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #1d4ed8;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+@media print {
+  @page {
+    margin: 0mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Ocultar la aplicación reactiva para que colapse completamente a 0px de altura */
+  #root {
+    display: none !important;
+  }
+
+  /* Mostrar únicamente el contenedor del ticket térmico oficial, comprobante de horas extras o reporte consolidado */
+  #ticket-recibo-print,
+  #ticket-recibo-print *,
+  #comprobante-horas-extras-print,
+  #comprobante-horas-extras-print *,
+  #comprobante-horas-extras-carta-print,
+  #comprobante-horas-extras-carta-print *,
+  #ticket-recibo-carta-print,
+  #ticket-recibo-carta-print *,
+  #reporte-saldos-print,
+  #reporte-saldos-print *,
+  #reporte-saldos-pos80-print,
+  #reporte-saldos-pos80-print *,
+  #reporte-saldos-pos80c-print,
+  #reporte-saldos-pos80c-print *,
+  #reporte-saldos-carta-print,
+  #reporte-saldos-carta-print *,
+  #hoja-detalle-vacaciones-print,
+  #hoja-detalle-vacaciones-print * {
+    visibility: visible !important;
+  }
+
+  #ticket-recibo-print,
+  #comprobante-horas-extras-print,
+  #reporte-saldos-pos80-print,
+  #reporte-saldos-pos80c-print {
+    display: block !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 76mm !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 3mm 3.5mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: 'Courier New', Courier, monospace !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  #comprobante-horas-extras-carta-print,
+  #ticket-recibo-carta-print,
+  #hoja-detalle-vacaciones-print,
+  #reporte-saldos-print,
+  #reporte-saldos-carta-print {
+    display: block !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    padding: 8mm 10mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
