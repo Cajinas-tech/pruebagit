@@ -15,6 +15,7 @@ import { ModuloColillaPlanilla } from './components/ModuloColillaPlanilla';
 import { ModuloGestionDescanso } from './components/ModuloGestionDescanso';
 import { ModuloDiasLibres } from './components/ModuloDiasLibres';
 import { ModuloFeriados } from './components/ModuloFeriados';
+import { ModuloCalendarioLaboral } from './components/ModuloCalendarioLaboral';
 import { GuiaLeyNica } from './components/GuiaLeyNica';
 import { ReporteSaldos } from './components/ReporteSaldos';
 import { AjustesSistema } from './components/AjustesSistema';
@@ -207,6 +208,7 @@ function MainLayout() {
     descanso: 'Gestión del Personal',
     dias_libres: 'Día Libre Semanal (Art. 64 C.T.)',
     feriados: 'Días Feriados y Compensación (Art. 66 y 67 C.T.)',
+    calendario: 'Calendario Laboral de Colaboradores',
     nuevo_empleado: 'Alta de Personal',
     ley_nica: 'Art. 76 Código del Trabajo (Nicaragua)',
     reportes: 'Reporte Consolidado de Saldos',
@@ -326,6 +328,11 @@ function MainLayout() {
               {/* VISTA 5C: DÍAS FERIADOS Y COMPENSACIÓN (Art. 66 y 67 C.T.) */}
               {tabActiva === 'feriados' && (
                 <ModuloFeriados />
+              )}
+
+              {/* VISTA 5D: CALENDARIO LABORAL (Días Libres, Vacaciones y Feriados por Empleado) */}
+              {tabActiva === 'calendario' && (
+                <ModuloCalendarioLaboral />
               )}
 
               {/* VISTA 6: LEY NICA ART. 76 (Admin en ajustes / Colaborador vista directa) */}

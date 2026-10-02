@@ -15,7 +15,8 @@ import {
   Palmtree,
   X,
   Receipt,
-  Coffee
+  Coffee,
+  CalendarRange
 } from 'lucide-react';
 import { SendaLogo } from './SendaLogo';
 import { ConfirmModal } from './ConfirmModal';
@@ -30,6 +31,7 @@ export type TabId =
   | 'descanso'
   | 'dias_libres'
   | 'feriados'
+  | 'calendario'
   | 'calculadora' 
   | 'nuevo_empleado' 
   | 'ley_nica' 
@@ -355,6 +357,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <Palmtree className="w-4 h-4 flex-shrink-0 text-amber-400" />
                         {!estaColapsada && <span>Días Feriados (Art. 66-67)</span>}
                       </button>
+
+                      {/* Calendario Laboral (Días Libres, Vacaciones y Feriados por Empleado) */}
+                      <button
+                        onClick={() => manejarSeleccion('calendario')}
+                        title="Calendario Laboral (Descansos, Vacaciones y Feriados)"
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
+                          tabActiva === 'calendario'
+                            ? 'bg-[#1d63ff] text-white shadow-md shadow-blue-500/20'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        <CalendarRange className="w-4 h-4 flex-shrink-0 text-indigo-400" />
+                        {!estaColapsada && <span>Calendario Laboral</span>}
+                      </button>
                     </div>
                   </div>
 
@@ -521,6 +537,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       >
                         <Palmtree className="w-4 h-4 flex-shrink-0 text-amber-400" />
                         {!estaColapsada && <span>Días Feriados</span>}
+                      </button>
+
+                      {/* Mi Calendario Laboral */}
+                      <button
+                        onClick={() => manejarSeleccion('calendario')}
+                        title="Mi Calendario Laboral"
+                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
+                          tabActiva === 'calendario'
+                            ? 'bg-[#1d63ff] text-white shadow-md shadow-blue-500/20'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
+                        }`}
+                      >
+                        <CalendarRange className="w-4 h-4 flex-shrink-0 text-indigo-400" />
+                        {!estaColapsada && <span>Mi Calendario Laboral</span>}
                       </button>
                     </div>
                   </div>
