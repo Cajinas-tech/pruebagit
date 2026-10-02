@@ -427,7 +427,7 @@ export const ModuloPagoVacaciones: React.FC<PropsModuloPago> = ({
     <>
       <div className="space-y-6 animate-fadeIn w-full">
         {/* HEADER BANNER IDÉNTICO AL DISEÑO DE GESTIÓN DE SOLICITUDES */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/60 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs backdrop-blur-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#0f172a] p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <div className="flex items-center gap-3 sm:gap-4">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 p-0.5 shadow-lg shadow-blue-500/25 flex items-center justify-center shrink-0">
               <div className="w-full h-full bg-white dark:bg-slate-950 rounded-[14px] flex items-center justify-center">
@@ -471,8 +471,8 @@ export const ModuloPagoVacaciones: React.FC<PropsModuloPago> = ({
           </div>
         </div>
 
-        {/* BARRA DE PESTAÑAS IDÉNTICA AL DISEÑO DE GESTIÓN DE SOLICITUDES */}
-        <div className="flex border-b border-slate-200 dark:border-slate-800 gap-4 sm:gap-6 overflow-x-auto touch-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* BARRA DE PESTAÑAS OPACA Y SÓLIDA */}
+        <div className="bg-white dark:bg-[#0f172a] p-1.5 px-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex gap-4 sm:gap-6 overflow-x-auto touch-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {/* Pestaña 1: Liquidación Completa */}
           <button
             type="button"

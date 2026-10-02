@@ -450,14 +450,17 @@ export const TablaPersonal: React.FC<TablaPersonalProps> = ({ onNuevoEmpleado })
       {/* Modal Frontal para Calculadora de Liquidación */}
       {empleadoSeleccionado && (
         <div 
-          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-[2px] animate-fadeIn"
+          className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setEmpleadoSeleccionado(null);
             }
           }}
         >
-          <div className="relative w-full max-w-4xl max-h-[92vh] overflow-y-auto">
+          <div 
+            className="relative w-full max-w-5xl bg-[#f8fafc] dark:bg-[#0c1322] rounded-[32px] p-3 sm:p-5 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[94vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <ModuloPagoVacaciones
               empleadoInicialId={empleadoSeleccionado.id}
               saldoDisponible={empleadoSeleccionado.saldoDisponible}
