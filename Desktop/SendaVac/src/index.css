@@ -147,14 +147,19 @@
   #reporte-saldos-carta-print,
   #reporte-saldos-carta-print *,
   #hoja-detalle-vacaciones-print,
-  #hoja-detalle-vacaciones-print * {
+  #hoja-detalle-vacaciones-print *,
+  #historial-descansos-pos80-print,
+  #historial-descansos-pos80-print *,
+  #historial-descansos-carta-print,
+  #historial-descansos-carta-print * {
     visibility: visible !important;
   }
 
   #ticket-recibo-print,
   #comprobante-horas-extras-print,
   #reporte-saldos-pos80-print,
-  #reporte-saldos-pos80c-print {
+  #reporte-saldos-pos80c-print,
+  #historial-descansos-pos80-print {
     display: block !important;
     position: relative !important;
     left: auto !important;
@@ -177,7 +182,8 @@
   #ticket-recibo-carta-print,
   #hoja-detalle-vacaciones-print,
   #reporte-saldos-print,
-  #reporte-saldos-carta-print {
+  #reporte-saldos-carta-print,
+  #historial-descansos-carta-print {
     display: block !important;
     position: relative !important;
     left: auto !important;

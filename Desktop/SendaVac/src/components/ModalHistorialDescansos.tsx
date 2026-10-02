@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   Calendar,
@@ -8,6 +9,7 @@ import {
   AlertCircle,
   FileDown,
   Printer,
+  Receipt,
   Filter,
   Search,
   ShieldCheck,
@@ -75,6 +77,19 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
   const [anioFiltro, setAnioFiltro] = useState<number | 0>(0);
   const [busqueda, setBusqueda] = useState<string>('');
   const [vistaModo, setVistaModo] = useState<'timeline' | 'tabla'>('timeline');
+
+  // Estado para impresión directa en POS-80 / Carta
+  const [tipoImpresionActiva, setTipoImpresionActiva] = useState<'carta' | 'pos80' | null>(null);
+
+  const ejecutarImpresion = (formato: 'carta' | 'pos80') => {
+    setTipoImpresionActiva(formato);
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        setTipoImpresionActiva(null);
+      }, 1000);
+    }, 150);
+  };
 
   // 1. Obtener historial consolidado de todas las fuentes (definido incondicionalmente para respetar las reglas de Hooks de React)
   const historialCompleto = useMemo(() => {
@@ -230,12 +245,22 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleExportarPDF}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 transition cursor-pointer"
-              title="Descargar Reporte en PDF Oficial"
+              onClick={() => ejecutarImpresion('carta')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 transition cursor-pointer shadow-xs"
+              title="Imprimir Hoja Completa Tamaño Carta (A4)"
             >
-              <FileDown className="w-4 h-4" />
-              <span>Exportar PDF</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>Imprimir Carta (A4)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => ejecutarImpresion('pos80')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80 transition cursor-pointer shadow-xs"
+              title="Imprimir Ticket Térmico POS-80 / POS-80C"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>Ticket POS-80</span>
             </button>
 
             <button
@@ -620,7 +645,7 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
           )}
         </div>
 
-        {/* Footer del Modal con Nota Legal y Botones */}
+        {/* Footer del Modal con Nota Legal y Botones de Impresión */}
         <div className="p-4 sm:px-6 bg-white dark:bg-[#0f172a] border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
@@ -629,15 +654,27 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
             </span>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <button
               type="button"
-              onClick={handleExportarPDF}
+              onClick={() => ejecutarImpresion('carta')}
               className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
+              title="Imprimir Hoja Completa Tamaño Carta (A4)"
             >
-              <FileDown className="w-3.5 h-3.5" />
-              <span>Imprimir / Descargar PDF</span>
+              <Printer className="w-3.5 h-3.5" />
+              <span>Imprimir Carta (A4)</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => ejecutarImpresion('pos80')}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
+              title="Imprimir Ticket Térmico POS-80 / POS-80C"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              <span>Imprimir Ticket (POS-80 / POS-80C)</span>
+            </button>
+
             <button
               type="button"
               onClick={onClose}
@@ -649,6 +686,294 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
         </div>
 
       </div>
+
+      {/* ======================================================== */}
+      {/* 1. PORTAL DE IMPRESIÓN DIRECTA: TICKET TÉRMICO POS-80 / POS-80C */}
+      {/* ======================================================== */}
+      {tipoImpresionActiva === 'pos80' && createPortal(
+        <div id="historial-descansos-pos80-print" className="hidden print:block text-black bg-white">
+          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <div style={{ fontWeight: '900', fontSize: '15px', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
+              {empresaInfo.nombreComercial || 'SENDA SISTEMAS'}
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '2px' }}>
+              RUC: {empresaInfo.ruc || 'J0310000012345'}
+            </div>
+            {empresaInfo.telefono && (
+              <div style={{ fontSize: '10px' }}>
+                Tel: {empresaInfo.telefono}
+              </div>
+            )}
+            <div style={{ borderBottom: '1px dashed #000', margin: '6px 0' }} />
+            <div style={{ fontWeight: 'bold', fontSize: '12px', textTransform: 'uppercase' }}>
+              HISTORIAL DE DESCANSOS Y VACACIONES
+            </div>
+            <div style={{ fontSize: '9px', fontStyle: 'italic', marginTop: '1px' }}>
+              Ley N° 185 - Código del Trabajo Nicaragua
+            </div>
+            <div style={{ fontSize: '9px', marginTop: '2px' }}>
+              Emisión: {new Date().toLocaleDateString('es-NI')} {new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit' })}
+            </div>
+          </div>
+
+          <div style={{ borderBottom: '1px dashed #000', margin: '6px 0' }} />
+
+          {/* Datos del Colaborador */}
+          <div style={{ fontSize: '10px', lineHeight: '1.4' }}>
+            <div><strong>COLABORADOR:</strong> {empleado.nombre}</div>
+            <div><strong>CARGO:</strong> {empleado.cargo || 'N/D'}</div>
+            <div><strong>DEPTO:</strong> {empleado.departamento || 'General'}</div>
+            <div><strong>INGRESO:</strong> {empleado.fechaIngreso || 'N/D'}</div>
+            <div><strong>SALARIO:</strong> {formatearCordobas(empleado.salarioMensual || 0)}</div>
+            <div><strong>SALDO ACTUAL:</strong> {(empleado.saldoDisponible ?? 0).toFixed(2)} días</div>
+          </div>
+
+          <div style={{ borderBottom: '1px dashed #000', margin: '6px 0' }} />
+
+          {/* Resumen Analítico */}
+          <div style={{ fontSize: '10px', lineHeight: '1.3' }}>
+            <div style={{ fontWeight: 'bold', textDecoration: 'underline', marginBottom: '3px' }}>RESUMEN DE REGISTROS:</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Total días registrados:</span>
+              <strong>{resumen.totalDiasGeneral} días</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Vacaciones Gozadas:</span>
+              <strong>{resumen.totalDiasVacacionesGozadas} d</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Séptimos Días (Art. 64):</span>
+              <strong>{resumen.totalDescansosSemanales} d</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>A Cuenta Saldo:</span>
+              <strong>{resumen.totalDiasACuentaVacaciones} d</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Compensatorios:</span>
+              <strong>{resumen.totalDiasCompensatorios} d</strong>
+            </div>
+          </div>
+
+          <div style={{ borderBottom: '1px dashed #000', margin: '6px 0' }} />
+
+          {/* Detalle Cronológico de Eventos */}
+          <div style={{ fontSize: '9.5px', lineHeight: '1.3' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+              DETALLE DE EVENTOS ({historialFiltrado.length}):
+            </div>
+            {historialFiltrado.map((item, idx) => (
+              <div key={item.id || idx} style={{ marginBottom: '6px', borderBottom: '1px dotted #ccc', paddingBottom: '4px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+                  <span>{item.fechaInicio}{item.fechaFin && item.fechaFin !== item.fechaInicio ? ` al ${item.fechaFin}` : ''}</span>
+                  <span>{item.dias} {item.dias === 1 ? 'día' : 'días'}</span>
+                </div>
+                <div>
+                  <strong>Tipo:</strong> {item.tipo}
+                </div>
+                <div>
+                  <strong>Efecto:</strong> {item.descuentaSaldoVacaciones ? `Descuenta (-${item.dias})` : 'Remunerado 100%'}
+                </div>
+                {item.motivo && (
+                  <div style={{ fontStyle: 'italic', color: '#333' }}>
+                    Motivo: {item.motivo}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ borderBottom: '1px dashed #000', margin: '8px 0 16px 0' }} />
+
+          {/* Firmas de Constancia */}
+          <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '10px' }}>
+            <div style={{ borderTop: '1px solid #000', width: '80%', margin: '0 auto 4px auto' }} />
+            <div><strong>{empleado.nombre}</strong></div>
+            <div>Firma del Colaborador</div>
+
+            <div style={{ borderTop: '1px solid #000', width: '80%', margin: '24px auto 4px auto' }} />
+            <div><strong>RECURSOS HUMANOS / ADMIN</strong></div>
+            <div>Firma y Sello Autorizado</div>
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: '8.5px', marginTop: '14px', color: '#555' }}>
+            Comprobante oficial generado por SendaVac<br />
+            *** FIN DEL TICKET ***
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* ======================================================== */}
+      {/* 2. PORTAL DE IMPRESIÓN DIRECTA: HOJA TAMAÑO CARTA (A4)   */}
+      {/* ======================================================== */}
+      {tipoImpresionActiva === 'carta' && createPortal(
+        <div id="historial-descansos-carta-print" className="hidden print:block text-black bg-white">
+          {/* Cabecera Membretada Formal */}
+          <div className="border-b-2 border-black pb-4 mb-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-xl font-black tracking-tight text-black uppercase">
+                  {empresaInfo.nombreComercial || 'SENDA SISTEMAS'}
+                </h1>
+                <p className="text-xs text-slate-700 font-bold">
+                  RUC: {empresaInfo.ruc || 'J0310000012345'} | Tel: {empresaInfo.telefono || '+505 8505 9284'}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {empresaInfo.direccion || 'Managua, Nicaragua'}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="inline-block border border-black px-3 py-1 font-bold text-xs uppercase bg-slate-50">
+                  EXPEDIENTE OFICIAL DE DESCANSOS
+                </div>
+                <p className="text-[10px] text-slate-600 mt-1">
+                  Fecha de emisión: {new Date().toLocaleDateString('es-NI')} {new Date().toLocaleTimeString('es-NI', { hour: '2-digit', minute: '2-digit' })}
+                </p>
+                <p className="text-[10px] font-semibold text-slate-700">
+                  Ley N° 185 (Código del Trabajo de Nicaragua)
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Ficha del Colaborador y Estado de Saldos */}
+          <div className="border border-slate-300 rounded-lg p-3 mb-4 bg-slate-50/50">
+            <h2 className="text-xs font-black uppercase text-slate-800 border-b border-slate-300 pb-1 mb-2">
+              Datos Generales del Colaborador
+            </h2>
+            <div className="grid grid-cols-4 gap-2 text-xs">
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">COLABORADOR:</span>
+                <span className="font-bold text-slate-900">{empleado.nombre}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">CARGO:</span>
+                <span className="font-medium text-slate-800">{empleado.cargo || 'N/D'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">DEPARTAMENTO:</span>
+                <span className="font-medium text-slate-800">{empleado.departamento || 'General'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">FECHA INGRESO:</span>
+                <span className="font-medium text-slate-800">{empleado.fechaIngreso || 'N/D'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">SALARIO MENSUAL:</span>
+                <span className="font-bold text-slate-900">{formatearCordobas(empleado.salarioMensual || 0)}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">SALDO ACTUAL VACACIONES:</span>
+                <span className="font-black text-blue-700">{(empleado.saldoDisponible ?? 0).toFixed(2)} días</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">TOTAL DÍAS HISTÓRICOS:</span>
+                <span className="font-bold text-slate-900">{resumen.totalDiasGeneral} días</span>
+              </div>
+              <div>
+                <span className="text-slate-500 font-semibold block text-[10px]">DESCUENTAN VACACIONES:</span>
+                <span className="font-bold text-rose-700">-{resumen.totalDiasACuentaVacaciones} días</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Resumen por Tipo de Descanso */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="border border-slate-300 p-2 text-center rounded">
+              <div className="text-[10px] font-bold text-slate-600 uppercase">Vacaciones Gozadas</div>
+              <div className="text-base font-black text-slate-900">{resumen.totalDiasVacacionesGozadas} días</div>
+            </div>
+            <div className="border border-slate-300 p-2 text-center rounded">
+              <div className="text-[10px] font-bold text-slate-600 uppercase">Séptimos Días (Art. 64)</div>
+              <div className="text-base font-black text-slate-900">{resumen.totalDescansosSemanales} días</div>
+            </div>
+            <div className="border border-slate-300 p-2 text-center rounded">
+              <div className="text-[10px] font-bold text-slate-600 uppercase">A Cuenta Saldo</div>
+              <div className="text-base font-black text-amber-700">{resumen.totalDiasACuentaVacaciones} días</div>
+            </div>
+            <div className="border border-slate-300 p-2 text-center rounded">
+              <div className="text-[10px] font-bold text-slate-600 uppercase">Compensatorios</div>
+              <div className="text-base font-black text-teal-700">{resumen.totalDiasCompensatorios} días</div>
+            </div>
+          </div>
+
+          {/* Tabla Cronológica Detallada */}
+          <h3 className="text-xs font-black uppercase text-slate-900 mb-2">
+            Expediente Cronológico de Descansos ({historialFiltrado.length} registros)
+          </h3>
+          <table className="w-full text-[10.5px] border-collapse border border-slate-400 mb-4">
+            <thead>
+              <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-400">
+                <th className="border border-slate-300 px-2 py-1 text-left">Fecha / Período</th>
+                <th className="border border-slate-300 px-2 py-1 text-left">Tipo de Descanso</th>
+                <th className="border border-slate-300 px-2 py-1 text-center">Días</th>
+                <th className="border border-slate-300 px-2 py-1 text-center">Afectación Saldo</th>
+                <th className="border border-slate-300 px-2 py-1 text-center">Estado</th>
+                <th className="border border-slate-300 px-2 py-1 text-left">Motivo / Fundamento Legal</th>
+                <th className="border border-slate-300 px-2 py-1 text-left">Autorizado Por</th>
+              </tr>
+            </thead>
+            <tbody>
+              {historialFiltrado.map((item, index) => (
+                <tr key={item.id || index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50'}>
+                  <td className="border border-slate-300 px-2 py-1 font-semibold whitespace-nowrap">
+                    {item.fechaInicio}
+                    {item.fechaFin && item.fechaFin !== item.fechaInicio ? ` al ${item.fechaFin}` : ''}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1 font-medium">
+                    {item.tipo}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1 text-center font-bold">
+                    {item.dias}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1 text-center">
+                    {item.descuentaSaldoVacaciones ? (
+                      <span className="font-bold text-rose-700">Descuenta (-{item.dias})</span>
+                    ) : (
+                      <span className="font-bold text-emerald-700">Remunerado (100%)</span>
+                    )}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1 text-center capitalize">
+                    {item.estado.toLowerCase()}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1">
+                    <div>{item.motivo || 'Descanso programado'}</div>
+                    {item.observacionLegal && (
+                      <div className="text-[9px] text-slate-500 italic">{item.observacionLegal}</div>
+                    )}
+                  </td>
+                  <td className="border border-slate-300 px-2 py-1 whitespace-nowrap">
+                    {item.autorizadoPor || 'Administración'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Certificación Legal y Firmas */}
+          <div className="border border-slate-300 p-2.5 rounded text-[10px] text-slate-600 mb-6 bg-slate-50">
+            <p className="font-semibold text-slate-800 mb-1">DECLARACIÓN DE CONFORMIDAD LABORAL:</p>
+            <p>
+              El presente expediente refleja fielmente los días de descanso semanal obligatorio (Art. 64), descansos compensatorios y feriados nacionales (Art. 66 y 67), así como los períodos de vacaciones gozados y remunerados (Art. 76) amparados por la Ley N° 185 (Código del Trabajo de la República de Nicaragua). Ambas partes dejan constancia de su conformidad.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-12 pt-6 mt-4">
+            <div className="text-center">
+              <div className="border-t border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-xs uppercase">{empleado.nombre}</p>
+              <p className="text-[10px] text-slate-600">Firma del Colaborador</p>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-black w-48 mx-auto mb-1" />
+              <p className="font-bold text-xs uppercase">RECURSOS HUMANOS / ADMINISTRACIÓN</p>
+              <p className="text-[10px] text-slate-600">Firma y Sello Oficial</p>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 };
