@@ -242,31 +242,31 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-nowrap shrink-0">
             <button
               type="button"
               onClick={() => ejecutarImpresion('carta')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 transition cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 transition cursor-pointer shadow-xs whitespace-nowrap flex-shrink-0"
               title="Imprimir Hoja Completa Tamaño Carta (A4)"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Imprimir Carta (A4)</span>
             </button>
 
             <button
               type="button"
               onClick={() => ejecutarImpresion('pos80')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80 transition cursor-pointer shadow-xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80 transition cursor-pointer shadow-xs whitespace-nowrap flex-shrink-0"
               title="Imprimir Ticket Térmico POS-80 / POS-80C"
             >
-              <Receipt className="w-3.5 h-3.5" />
+              <Receipt className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Ticket POS-80</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex-shrink-0"
               title="Cerrar"
             >
               <X className="w-5 h-5" />
@@ -645,40 +645,40 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
           )}
         </div>
 
-        {/* Footer del Modal con Nota Legal y Botones de Impresión */}
-        <div className="p-4 sm:px-6 bg-white dark:bg-[#0f172a] border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+        {/* Footer del Modal con Nota Legal y Botones de Impresión en una sola línea recta horizontal */}
+        <div className="p-3.5 sm:px-6 bg-white dark:bg-[#0f172a] border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 flex-shrink-0 overflow-x-auto">
+          <div className="hidden lg:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 min-w-0 truncate">
             <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <span className="text-[11px]">
-              Los descansos se rigen por la <strong>Ley N° 185 (Código del Trabajo de Nicaragua)</strong>: Arts. 64 (Séptimo día), 67 (Feriados) y 76 (Vacaciones).
+            <span className="text-[11px] truncate">
+              Descansos regidos por la <strong>Ley N° 185 (Código del Trabajo de Nicaragua)</strong>: Arts. 64, 67 y 76.
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2 flex-nowrap shrink-0 ml-auto">
             <button
               type="button"
               onClick={() => ejecutarImpresion('carta')}
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap flex-shrink-0"
               title="Imprimir Hoja Completa Tamaño Carta (A4)"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Imprimir Carta (A4)</span>
             </button>
 
             <button
               type="button"
               onClick={() => ejecutarImpresion('pos80')}
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap flex-shrink-0"
               title="Imprimir Ticket Térmico POS-80 / POS-80C"
             >
-              <Receipt className="w-3.5 h-3.5" />
+              <Receipt className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Imprimir Ticket (POS-80 / POS-80C)</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer whitespace-nowrap flex-shrink-0"
             >
               Cerrar
             </button>
