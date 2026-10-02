@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   CalendarCheck, 
   CalendarClock, 
@@ -25,7 +25,9 @@ import {
   Download,
   Coffee,
   Palmtree,
-  History
+  History,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -277,6 +279,34 @@ export const ModuloGestionDescanso: React.FC = () => {
   const [tabActiva, setTabActiva] = useState<'programable' | 'pagadas' | 'horas_extras' | 'dias_libres' | 'feriados' | 'historial'>('programable');
   const [colaboradorHistorialId, setColaboradorHistorialId] = useState<string>('');
   const [historialModalEmp, setHistorialModalEmp] = useState<any>(null);
+
+  // Referencia y control de desplazamiento para pestañas
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
+  const [puedeScrollIzq, setPuedeScrollIzq] = useState(false);
+  const [puedeScrollDer, setPuedeScrollDer] = useState(false);
+
+  const verificarScrollPestanas = () => {
+    if (tabsContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsContainerRef.current;
+      setPuedeScrollIzq(scrollLeft > 6);
+      setPuedeScrollDer(scrollLeft + clientWidth < scrollWidth - 6);
+    }
+  };
+
+  useEffect(() => {
+    verificarScrollPestanas();
+    const handleResize = () => verificarScrollPestanas();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [tabActiva]);
+
+  const deslizarPestanas = (dir: 'izq' | 'der') => {
+    if (tabsContainerRef.current) {
+      const offset = dir === 'izq' ? -220 : 220;
+      tabsContainerRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+      setTimeout(verificarScrollPestanas, 250);
+    }
+  };
 
   // Estado de descansos programables
   const [descansos, setDescansos] = useState<DescansoProgramado[]>(() => {
@@ -907,94 +937,169 @@ export const ModuloGestionDescanso: React.FC = () => {
         </div>
       </div>
 
-      {/* Barra de Pestañas con scroll suave en pantallas móviles y tablets */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-4 sm:gap-6 overflow-x-auto touch-scroll [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button
-          type="button"
-          onClick={() => setTabActiva('programable')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'programable'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <CalendarClock className="w-4 h-4" />
-          <span>Descanso del Personal</span>
-          <span className="ml-1 text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300">
-            {descansos.length}
-          </span>
-        </button>
+      {/* Barra de Pestañas Acoplada, sin truncamiento y con navegación fluida */}
+      <div className="relative bg-white dark:bg-slate-900/60 p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs backdrop-blur-md">
+        <div className="flex items-center gap-1">
+          {/* Botón Desplazar Izquierda (Visible si hay desbordamiento horizontal) */}
+          {puedeScrollIzq && (
+            <button
+              type="button"
+              onClick={() => deslizarPestanas('izq')}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition cursor-pointer shrink-0 shadow-xs"
+              title="Ver pestañas anteriores"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
 
-        <button
-          type="button"
-          onClick={() => setTabActiva('pagadas')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'pagadas'
-              ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <DollarSign className="w-4 h-4" />
-          <span>Vacaciones Pagadas del Personal</span>
-          <span className="ml-1 text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300">
-            {pagosVacaciones.length}
-          </span>
-        </button>
+          {/* Contenedor con scroll suave y ajuste flexible */}
+          <div
+            ref={tabsContainerRef}
+            onScroll={verificarScrollPestanas}
+            className="flex-1 flex items-center gap-1 sm:gap-1.5 overflow-x-auto touch-scroll scroll-smooth [scrollbar-width:thin] scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 py-0.5"
+          >
+            {/* Pestaña 1: Descansos */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('programable')}
+              title="Descanso del Personal"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'programable'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <CalendarClock className={`w-4 h-4 ${tabActiva === 'programable' ? 'text-white' : 'text-blue-600 dark:text-blue-400'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Descanso del Personal</span>
+                <span className="2xl:hidden">Descansos</span>
+              </span>
+              <span className={`text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-full ${
+                tabActiva === 'programable'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-blue-100 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300'
+              }`}>
+                {descansos.length}
+              </span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setTabActiva('horas_extras')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'horas_extras'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Clock className="w-4 h-4" />
-          <span>Horas Extras del Personal</span>
-          <span className="ml-1 text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300">
-            {registrosHorasExtras.length}
-          </span>
-        </button>
+            {/* Pestaña 2: Vacaciones Pagadas */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('pagadas')}
+              title="Vacaciones Pagadas del Personal (Art. 76 C.T.)"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'pagadas'
+                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <DollarSign className={`w-4 h-4 ${tabActiva === 'pagadas' ? 'text-white' : 'text-emerald-600 dark:text-emerald-400'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Vacaciones Pagadas del Personal</span>
+                <span className="2xl:hidden">Vacaciones Pagadas</span>
+              </span>
+              <span className={`text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-full ${
+                tabActiva === 'pagadas'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300'
+              }`}>
+                {pagosVacaciones.length}
+              </span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setTabActiva('dias_libres')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'dias_libres'
-              ? 'border-amber-600 text-amber-600 dark:text-amber-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Coffee className="w-4 h-4" />
-          <span>Días Libres Semanales (Art. 64 C.T.)</span>
-        </button>
+            {/* Pestaña 3: Horas Extras */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('horas_extras')}
+              title="Horas Extras del Personal (Art. 58 C.T.)"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'horas_extras'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Clock className={`w-4 h-4 ${tabActiva === 'horas_extras' ? 'text-white' : 'text-indigo-600 dark:text-indigo-400'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Horas Extras del Personal</span>
+                <span className="2xl:hidden">Horas Extras</span>
+              </span>
+              <span className={`text-[10px] sm:text-[11px] font-black px-1.5 py-0.5 rounded-full ${
+                tabActiva === 'horas_extras'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300'
+              }`}>
+                {registrosHorasExtras.length}
+              </span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setTabActiva('feriados')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'feriados'
-              ? 'border-rose-600 text-rose-600 dark:text-rose-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Palmtree className="w-4 h-4 text-amber-500" />
-          <span>Días Feriados (Art. 66-67 C.T.)</span>
-        </button>
+            {/* Pestaña 4: Días Libres */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('dias_libres')}
+              title="Días Libres Semanales Obligatorios (Art. 64 C.T.)"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'dias_libres'
+                  ? 'bg-amber-600 text-white shadow-md shadow-amber-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Coffee className={`w-4 h-4 ${tabActiva === 'dias_libres' ? 'text-white' : 'text-amber-600 dark:text-amber-400'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Días Libres Semanales (Art. 64 C.T.)</span>
+                <span className="2xl:hidden">Días Libres (Art. 64)</span>
+              </span>
+            </button>
 
-        <button
-          type="button"
-          onClick={() => setTabActiva('historial')}
-          className={`pb-3.5 sm:pb-4 text-xs sm:text-sm font-extrabold flex items-center gap-2 sm:gap-2.5 border-b-2 transition cursor-pointer whitespace-nowrap shrink-0 ${
-            tabActiva === 'historial'
-              ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-              : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <History className="w-4 h-4 text-blue-500" />
-          <span>Historial de Descansos y Vacaciones</span>
-        </button>
+            {/* Pestaña 5: Días Feriados */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('feriados')}
+              title="Días Feriados Nacionales y Locales (Art. 66-67 C.T.)"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'feriados'
+                  ? 'bg-rose-600 text-white shadow-md shadow-rose-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <Palmtree className={`w-4 h-4 ${tabActiva === 'feriados' ? 'text-white' : 'text-rose-500'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Días Feriados (Art. 66-67 C.T.)</span>
+                <span className="2xl:hidden">Días Feriados (Art. 66-67)</span>
+              </span>
+            </button>
+
+            {/* Pestaña 6: Historial */}
+            <button
+              type="button"
+              onClick={() => setTabActiva('historial')}
+              title="Historial de Descansos y Vacaciones de Colaboradores"
+              className={`py-2 px-3 sm:px-3.5 text-xs sm:text-sm font-extrabold flex items-center gap-2 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                tabActiva === 'historial'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+              }`}
+            >
+              <History className={`w-4 h-4 ${tabActiva === 'historial' ? 'text-white' : 'text-blue-500'}`} />
+              <span>
+                <span className="hidden 2xl:inline">Historial de Descansos y Vacaciones</span>
+                <span className="2xl:hidden">Historial</span>
+              </span>
+            </button>
+          </div>
+
+          {/* Botón Desplazar Derecha (Visible si hay desbordamiento horizontal) */}
+          {puedeScrollDer && (
+            <button
+              type="button"
+              onClick={() => deslizarPestanas('der')}
+              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition cursor-pointer shrink-0 shadow-xs"
+              title="Ver pestañas siguientes"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* PESTAÑA 1: DESCANSO DEL PERSONAL */}
