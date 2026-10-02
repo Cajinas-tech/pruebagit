@@ -76,20 +76,18 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
   const [busqueda, setBusqueda] = useState<string>('');
   const [vistaModo, setVistaModo] = useState<'timeline' | 'tabla'>('timeline');
 
-  // Si no está abierto o no hay empleado seleccionado
-  if (!isOpen || !empleado) return null;
-
-  // 1. Obtener historial consolidado de todas las fuentes
+  // 1. Obtener historial consolidado de todas las fuentes (definido incondicionalmente para respetar las reglas de Hooks de React)
   const historialCompleto = useMemo(() => {
+    if (!empleado?.id) return [];
     return obtenerHistorialDescansosEmpleado(empleado.id, {
-      solicitudes: solicitudes || solicitudesContext
+      solicitudes: solicitudes || solicitudesContext || []
     });
-  }, [empleado.id, solicitudes, solicitudesContext]);
+  }, [empleado?.id, solicitudes, solicitudesContext]);
 
   // 2. Resumen analítico
   const resumen = useMemo(() => {
-    return calcularResumenHistorialDescansos(historialCompleto, empleado.id);
-  }, [historialCompleto, empleado.id]);
+    return calcularResumenHistorialDescansos(historialCompleto, empleado?.id || '');
+  }, [historialCompleto, empleado?.id]);
 
   // 3. Años disponibles para filtro
   const aniosDisponibles = useMemo(() => {
@@ -119,8 +117,12 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
 
   // Manejar exportación a PDF
   const handleExportarPDF = () => {
+    if (!empleado) return;
     exportarHistorialDescansosPDF(empleado, historialFiltrado, resumen, empresaInfo);
   };
+
+  // Si no está abierto o no hay empleado seleccionado, retornar null después de haber llamado a todos los Hooks
+  if (!isOpen || !empleado) return null;
 
   // Color e ícono por tipo de descanso
   const getBadgePorTipo = (tipo: TipoDescansoHistorial) => {

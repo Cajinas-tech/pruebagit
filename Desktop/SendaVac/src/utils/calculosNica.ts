@@ -1024,7 +1024,22 @@ export const obtenerHistorialDescansosEmpleado = (
   const idsProcesados = new Set<string>();
 
   // 1. Fuentes: Solicitudes de Vacaciones
-  const listaSolicitudes = opciones?.solicitudes || [];
+  let listaSolicitudes = opciones?.solicitudes ? [...opciones.solicitudes] : [];
+  try {
+    const rawSol = localStorage.getItem('sendavac_solicitudes');
+    if (rawSol) {
+      const parsedSol = JSON.parse(rawSol);
+      const idsExistentes = new Set(listaSolicitudes.map(s => s.id));
+      parsedSol.forEach((s: any) => {
+        if (s && s.id && !idsExistentes.has(s.id)) {
+          listaSolicitudes.push(s);
+          idsExistentes.add(s.id);
+        }
+      });
+    }
+  } catch (e) {
+    console.error(e);
+  }
   listaSolicitudes.forEach((sol) => {
     if (sol.empleadoId === empleadoId) {
       // Filtrar canceladas/rechazadas si se requiere solo efectivas

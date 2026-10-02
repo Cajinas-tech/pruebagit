@@ -273,7 +273,7 @@ const obtenerFechasSugeridasPeriodo = (tipo: 'Semanal' | 'Quincenal' | 'Mensual'
 };
 
 export const ModuloGestionDescanso: React.FC = () => {
-  const { empleados, actualizarEmpleado } = useData();
+  const { empleados, solicitudes, actualizarEmpleado } = useData();
   const { usuarioActual } = useAuth();
   const { success, warning, error } = useToast();
   const [tabActiva, setTabActiva] = useState<'programable' | 'pagadas' | 'horas_extras' | 'dias_libres' | 'feriados' | 'historial'>('programable');
@@ -3351,6 +3351,7 @@ export const ModuloGestionDescanso: React.FC = () => {
         isOpen={!!historialModalEmp}
         onClose={() => setHistorialModalEmp(null)}
         empleado={historialModalEmp}
+        solicitudes={solicitudes}
       />
 
       {/* Modal de Confirmación para Borrar */}
