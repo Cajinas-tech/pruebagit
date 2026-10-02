@@ -141,30 +141,11 @@ export const ModalGenerarDiaLibre: React.FC<ModalGenerarDiaLibreProps> = ({
         }}
       />
 
-      {/* Contenedor Acoplado Directo (Diseño idéntico a la imagen proporcionada) */}
+      {/* Tarjeta Blanca Acoplada (Formulario) */}
       <div 
-        className="relative w-full max-w-[480px] text-left my-auto animate-scaleIn z-10 space-y-2.5"
+        className="relative w-full max-w-[480px] bg-white dark:bg-[#0f172a] rounded-[26px] shadow-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 text-left my-auto animate-scaleIn z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Banner Superior Idéntico a la imagen de referencia */}
-        {empActual && (
-          <div className="flex items-center gap-3 px-1 py-0.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#fef3c7] dark:bg-amber-950/70 text-[#d97706] dark:text-amber-400 flex items-center justify-center flex-shrink-0 shadow-xs">
-              <Coffee className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight">
-                Programar Día Libre para {empActual.nombre}
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
-                Art. 64 C.T. - Descanso semanal continuo obligatorio o a cuenta de vacaciones
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Tarjeta Blanca Acoplada (Formulario) */}
-        <div className="bg-white dark:bg-[#0f172a] rounded-[26px] shadow-2xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 text-left">
           {/* Cabecera del Card */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80">
             <div className="flex items-center gap-3">
@@ -308,6 +289,5 @@ export const ModalGenerarDiaLibre: React.FC<ModalGenerarDiaLibreProps> = ({
           </form>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
