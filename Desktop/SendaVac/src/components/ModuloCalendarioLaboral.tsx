@@ -24,6 +24,8 @@ import {
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
+import { db } from '../firebase';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Empleado, SolicitudVacaciones, RegistroFeriadoTrabajado, ModalidadCompensacionFeriado } from '../types';
 import { 
   formatearCordobas, 
@@ -45,7 +47,7 @@ interface EventoDia {
 }
 
 export const ModuloCalendarioLaboral: React.FC = () => {
-  const { empleados, solicitudes, actualizarEmpleado, recargarDatos } = useData();
+  const { empleados, solicitudes, actualizarEmpleado, recargarDatos, modoFirebaseReal } = useData();
   const { usuarioActual } = useAuth();
   const { success, warning, error } = useToast();
 
@@ -80,9 +82,10 @@ export const ModuloCalendarioLaboral: React.FC = () => {
   const [eventosDiaDetalle, setEventosDiaDetalle] = useState<EventoDia[]>([]);
   const [fechaDetalle, setFechaDetalle] = useState<string>('');
 
-  // 6. Almacenamiento local de Días Libres y Feriados
+  // 6. Almacenamiento local de Días Libres, Vacaciones y Feriados
   const [diasLibres, setDiasLibres] = useState<DiaLibreSemanal[]>([]);
   const [feriadosTrabajados, setFeriadosTrabajados] = useState<RegistroFeriadoTrabajado[]>([]);
+  const [solicitudesVacaciones, setSolicitudesVacaciones] = useState<SolicitudVacaciones[]>([]);
 
   // Inicializar colaborador seleccionado
   useEffect(() => {
@@ -91,7 +94,7 @@ export const ModuloCalendarioLaboral: React.FC = () => {
     }
   }, [empleados, colaboradorId]);
 
-  // Cargar Días Libres y Feriados de localStorage
+  // Cargar Días Libres, Feriados y Vacaciones de localStorage de forma reactiva
   const cargarRegistrosLocales = () => {
     try {
       const savedDL = localStorage.getItem('sendavac_dias_libres_semanales');
@@ -99,6 +102,34 @@ export const ModuloCalendarioLaboral: React.FC = () => {
 
       const savedFT = localStorage.getItem('sendavac_feriados_trabajados');
       if (savedFT) setFeriadosTrabajados(JSON.parse(savedFT));
+
+      // Cargar solicitudes de vacaciones desde localStorage (sendavac_solicitudes y retrocompatibilidad con sendavac_solicitudes_locales)
+      const savedSol = localStorage.getItem('sendavac_solicitudes');
+      let listaSol: SolicitudVacaciones[] = [];
+      if (savedSol) {
+        try {
+          listaSol = JSON.parse(savedSol);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      const savedSolLocales = localStorage.getItem('sendavac_solicitudes_locales');
+      if (savedSolLocales) {
+        try {
+          const parsedLocales: SolicitudVacaciones[] = JSON.parse(savedSolLocales);
+          listaSol = [...listaSol, ...parsedLocales];
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // Unificar solicitudes de context con las de localStorage deduplicando por id
+      const mapSol = new Map<string, SolicitudVacaciones>();
+      [...solicitudes, ...listaSol].forEach(s => {
+        if (s && s.id) mapSol.set(s.id, s);
+      });
+      setSolicitudesVacaciones(Array.from(mapSol.values()));
     } catch (e) {
       console.error('Error cargando registros de calendario:', e);
     }
@@ -106,7 +137,7 @@ export const ModuloCalendarioLaboral: React.FC = () => {
 
   useEffect(() => {
     cargarRegistrosLocales();
-  }, [modalRegistroAbierto, modalDetalleAbierto]);
+  }, [modalRegistroAbierto, modalDetalleAbierto, solicitudes]);
 
   // Colaborador actual seleccionado
   const empleadoActual = useMemo(() => {
@@ -246,28 +277,37 @@ export const ModuloCalendarioLaboral: React.FC = () => {
       });
 
     // B. VACACIONES del colaborador
-    solicitudes
-      .filter(s => s.empleadoId === empleadoActual.id && s.estado === 'Aprobado')
+    solicitudesVacaciones
+      .filter(s => s.empleadoId === empleadoActual.id && (s.estado === 'Aprobado' || s.estado === 'Pendiente'))
       .forEach(s => {
-        // Expandir rango de fechaInicio a fechaFin
+        // Expandir rango de fechaInicio a fechaFin sin desfase horario
         try {
-          const inicio = new Date(s.fechaInicio + 'T00:00:00');
-          const fin = new Date(s.fechaFin + 'T00:00:00');
-          const curr = new Date(inicio);
-          while (curr <= fin) {
-            const fStr = curr.toISOString().slice(0, 10);
+          if (!s.fechaInicio) return;
+          const [y1, m1, d1] = s.fechaInicio.split('-').map(Number);
+          const fFinStr = s.fechaFin || s.fechaInicio;
+          const [y2, m2, d2] = fFinStr.split('-').map(Number);
+
+          const curr = new Date(y1, m1 - 1, d1, 12, 0, 0);
+          const end = new Date(y2, m2 - 1, d2, 12, 0, 0);
+
+          while (curr <= end) {
+            const y = curr.getFullYear();
+            const m = String(curr.getMonth() + 1).padStart(2, '0');
+            const d = String(curr.getDate()).padStart(2, '0');
+            const fStr = `${y}-${m}-${d}`;
+
             agregarEvento(fStr, {
               id: `${s.id}-${fStr}`,
               tipo: 'vacaciones',
               titulo: 'Vacaciones (Art. 76)',
-              subtitulo: s.motivo || 'Vacaciones aprobadas',
+              subtitulo: s.motivo || 'Vacaciones de ley',
               color: 'emerald',
               detalles: s
             });
             curr.setDate(curr.getDate() + 1);
           }
         } catch (e) {
-          console.error(e);
+          console.error('Error calculando fechas de vacaciones:', e);
         }
       });
 
@@ -286,7 +326,7 @@ export const ModuloCalendarioLaboral: React.FC = () => {
       });
 
     return mapa;
-  }, [empleadoActual, diasLibres, solicitudes, feriadosTrabajados]);
+  }, [empleadoActual, diasLibres, solicitudesVacaciones, feriadosTrabajados]);
 
   // Mapa de Feriados Oficiales de Ley de Nicaragua (Generales del calendario)
   const feriadosOficialesMap = useMemo(() => {
@@ -309,11 +349,11 @@ export const ModuloCalendarioLaboral: React.FC = () => {
     const dlMes = diasLibres.filter(d => d.empleadoId === empleadoActual.id && d.fecha.startsWith(prefijoMes)).length;
 
     let vacMes = 0;
-    solicitudes
-      .filter(s => s.empleadoId === empleadoActual.id && s.estado === 'Aprobado')
+    solicitudesVacaciones
+      .filter(s => s.empleadoId === empleadoActual.id && (s.estado === 'Aprobado' || s.estado === 'Pendiente'))
       .forEach(s => {
-        if (s.fechaInicio.startsWith(prefijoMes) || s.fechaFin.startsWith(prefijoMes)) {
-          vacMes += s.diasSolicitados;
+        if ((s.fechaInicio && s.fechaInicio.startsWith(prefijoMes)) || (s.fechaFin && s.fechaFin.startsWith(prefijoMes))) {
+          vacMes += (s.diasSolicitados || 1);
         }
       });
 
@@ -324,7 +364,7 @@ export const ModuloCalendarioLaboral: React.FC = () => {
       vacacionesMes: vacMes,
       feriadosMes: ferMes
     };
-  }, [empleadoActual, diasLibres, solicitudes, feriadosTrabajados, mesActual, anioActual]);
+  }, [empleadoActual, diasLibres, solicitudesVacaciones, feriadosTrabajados, mesActual, anioActual]);
 
   // Abrir Modal de Registro en Fecha
   const handleClicCelda = (fechaStr: string) => {
@@ -340,6 +380,8 @@ export const ModuloCalendarioLaboral: React.FC = () => {
       // Pre-seleccionar tipo sugerido: si es feriado oficial, sugerir 'feriado'
       if (feriadosOficialesMap.has(fechaStr)) {
         setTipoRegistro('feriado');
+      } else if (filtroTipo === 'vacaciones') {
+        setTipoRegistro('vacaciones');
       } else {
         setTipoRegistro('dia_libre');
       }
@@ -407,11 +449,32 @@ export const ModuloCalendarioLaboral: React.FC = () => {
           comentarioAdmin: 'Aprobado directamente desde el Calendario Laboral'
         };
 
-        // Guardar solicitud en localStorage
-        const savedSol = localStorage.getItem('sendavac_solicitudes_locales');
-        const listaSol: SolicitudVacaciones[] = savedSol ? JSON.parse(savedSol) : [...solicitudes];
-        listaSol.unshift(nuevaSolicitud);
-        localStorage.setItem('sendavac_solicitudes_locales', JSON.stringify(listaSol));
+        // Guardar solicitud en el almacenamiento oficial (sendavac_solicitudes)
+        const savedSol = localStorage.getItem('sendavac_solicitudes');
+        let listaSol: SolicitudVacaciones[] = [];
+        if (savedSol) {
+          try {
+            listaSol = JSON.parse(savedSol);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        if (listaSol.length === 0) {
+          listaSol = [...solicitudesVacaciones];
+        }
+        const listaActualizada = [nuevaSolicitud, ...listaSol.filter(s => s.id !== nuevaSolicitud.id)];
+        localStorage.setItem('sendavac_solicitudes', JSON.stringify(listaActualizada));
+        localStorage.setItem('sendavac_solicitudes_locales', JSON.stringify(listaActualizada));
+        setSolicitudesVacaciones(listaActualizada);
+
+        // Si Firebase está activo, sincronizar en la colección solicitudes
+        if (modoFirebaseReal && db) {
+          try {
+            await setDoc(doc(db, 'solicitudes', nuevaSolicitud.id), nuevaSolicitud);
+          } catch (fbErr) {
+            console.warn('No se pudo guardar la solicitud en Firestore:', fbErr);
+          }
+        }
 
         // Deducir 1 día del colaborador
         const tomadosActuales = empleadoActual.diasTomados || 0;
@@ -483,12 +546,36 @@ export const ModuloCalendarioLaboral: React.FC = () => {
         }
         success('Día Libre Eliminado', 'Se retiró el día libre del colaborador');
       } else if (evento.tipo === 'vacaciones') {
-        // Remover solicitud
-        const savedSol = localStorage.getItem('sendavac_solicitudes_locales');
-        if (savedSol) {
-          const lista: SolicitudVacaciones[] = JSON.parse(savedSol);
-          const filtrada = lista.filter(s => s.id !== evento.detalles.id && !evento.id.startsWith(s.id));
-          localStorage.setItem('sendavac_solicitudes_locales', JSON.stringify(filtrada));
+        const solId = evento.detalles?.id || (evento.id.includes('-') ? evento.id.split('-')[0] : evento.id);
+
+        // Remover solicitud de localStorage y estado reactivo
+        const actualizarClave = (clave: string) => {
+          const raw = localStorage.getItem(clave);
+          if (raw) {
+            try {
+              const parsed: SolicitudVacaciones[] = JSON.parse(raw);
+              const filtrada = parsed.filter(s => s.id !== solId && !evento.id.startsWith(s.id));
+              localStorage.setItem(clave, JSON.stringify(filtrada));
+              return filtrada;
+            } catch (e) {
+              return null;
+            }
+          }
+          return null;
+        };
+
+        const listaFiltrada = actualizarClave('sendavac_solicitudes') || 
+                              solicitudesVacaciones.filter(s => s.id !== solId && !evento.id.startsWith(s.id));
+        actualizarClave('sendavac_solicitudes_locales');
+        setSolicitudesVacaciones(listaFiltrada);
+
+        // Si Firebase está activo
+        if (modoFirebaseReal && db && solId) {
+          try {
+            await deleteDoc(doc(db, 'solicitudes', solId));
+          } catch (fbErr) {
+            console.warn('No se pudo eliminar en Firebase:', fbErr);
+          }
         }
 
         // Devolver día de vacaciones
