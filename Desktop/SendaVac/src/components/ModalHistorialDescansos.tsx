@@ -242,36 +242,14 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-nowrap shrink-0">
-            <button
-              type="button"
-              onClick={() => ejecutarImpresion('carta')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-bold border border-blue-200 dark:border-blue-800/80 transition cursor-pointer shadow-xs whitespace-nowrap flex-shrink-0"
-              title="Imprimir Hoja Completa Tamaño Carta (A4)"
-            >
-              <Printer className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>Imprimir Carta (A4)</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => ejecutarImpresion('pos80')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-800/80 transition cursor-pointer shadow-xs whitespace-nowrap flex-shrink-0"
-              title="Imprimir Ticket Térmico POS-80 / POS-80C"
-            >
-              <Receipt className="w-3.5 h-3.5 flex-shrink-0" />
-              <span>Ticket POS-80</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex-shrink-0"
-              title="Cerrar"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex-shrink-0"
+            title="Cerrar"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Ficha Resumen del Colaborador */}
