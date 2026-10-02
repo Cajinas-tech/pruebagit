@@ -15,7 +15,6 @@ import {
   Palmtree,
   X,
   Receipt,
-  Coffee,
   CalendarRange
 } from 'lucide-react';
 import { SendaLogo } from './SendaLogo';
@@ -316,7 +315,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {!estaColapsada && <span>Liquidación (C$)</span>}
                       </button>
 
-                      {/* Gestión del Personal (Descansos, Vacaciones Pagadas y Horas Extras) */}
+                      {/* Gestión del Personal (Descansos, Vacaciones Pagadas, Horas Extras, Días Libres y Feriados) */}
                       <button
                         onClick={() => manejarSeleccion('descanso')}
                         title="Gestión del Personal"
@@ -328,34 +327,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       >
                         <CalendarCheck className="w-4 h-4 flex-shrink-0 text-amber-500" />
                         {!estaColapsada && <span>Gestión del Personal</span>}
-                      </button>
-
-                      {/* Días Libres Semanales (Art. 64 C.T.) */}
-                      <button
-                        onClick={() => manejarSeleccion('dias_libres')}
-                        title="Día Libre Semanal"
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
-                          tabActiva === 'dias_libres'
-                            ? 'bg-[#1d63ff] text-white shadow-md shadow-blue-500/20'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        <Coffee className="w-4 h-4 flex-shrink-0 text-amber-500" />
-                        {!estaColapsada && <span>Día Libre Semanal</span>}
-                      </button>
-
-                      {/* Días Feriados y Compensación (Art. 66 y 67 C.T.) */}
-                      <button
-                        onClick={() => manejarSeleccion('feriados')}
-                        title="Días Feriados (Art. 66-67)"
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
-                          tabActiva === 'feriados'
-                            ? 'bg-[#1d63ff] text-white shadow-md shadow-blue-500/20'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        <Palmtree className="w-4 h-4 flex-shrink-0 text-amber-400" />
-                        {!estaColapsada && <span>Días Feriados (Art. 66-67)</span>}
                       </button>
 
                       {/* Calendario Laboral (Días Libres, Vacaciones y Feriados por Empleado) */}
@@ -523,20 +494,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       >
                         <Receipt className="w-4 h-4 flex-shrink-0 text-cyan-400" />
                         {!estaColapsada && <span>Mi Colilla de Pago</span>}
-                      </button>
-
-                      {/* Mis Días Feriados */}
-                      <button
-                        onClick={() => manejarSeleccion('feriados')}
-                        title="Días Feriados"
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
-                          tabActiva === 'feriados'
-                            ? 'bg-[#1d63ff] text-white shadow-md shadow-blue-500/20'
-                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-slate-900 dark:hover:text-white'
-                        }`}
-                      >
-                        <Palmtree className="w-4 h-4 flex-shrink-0 text-amber-400" />
-                        {!estaColapsada && <span>Días Feriados</span>}
                       </button>
 
                       {/* Mi Calendario Laboral */}
