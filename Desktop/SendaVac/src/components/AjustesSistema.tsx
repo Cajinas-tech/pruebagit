@@ -39,7 +39,16 @@ interface PropsAjustes {
 }
 
 export const AjustesSistema: React.FC<PropsAjustes> = ({ tabInicial = 'backup' }) => {
-  const { empleados, solicitudes, agregarEmpleado, actualizarEmpleado, eliminarEmpleado, recargarDatos } = useData();
+  const { 
+    empleados, 
+    solicitudes, 
+    agregarEmpleado, 
+    actualizarEmpleado, 
+    eliminarEmpleado, 
+    recargarDatos,
+    empresa,
+    actualizarEmpresa 
+  } = useData();
   const { usuarioActual } = useAuth();
   const { success, warning, error, info } = useToast();
 
@@ -70,23 +79,21 @@ export const AjustesSistema: React.FC<PropsAjustes> = ({ tabInicial = 'backup' }
 
   // Company Settings
   const [company, setCompany] = useState<EmpresaInfo>(() => {
-    const saved = localStorage.getItem('sendavac_empresa');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return {
-      nombreComercial: 'SENDA SISTEMAS',
-      ruc: 'J0310000012345',
+    return empresa || {
+      nombreComercial: 'ElectroRax',
+      ruc: '2432105800000U',
       telefono: '+505 8505 9284',
       email: 'jairotten84@gmail.com',
       direccion: 'Managua, Nicaragua, Villa Sol Casa E8-23',
-      logo: '/images/logo/senda-logo.png'
+      logo: '/images/logo/electrorax-logo.png'
     };
   });
+
+  useEffect(() => {
+    if (empresa) {
+      setCompany(empresa);
+    }
+  }, [empresa]);
 
   // 1. BACKUP JSON (EXPORT)
   const handleExportJSON = () => {
@@ -269,10 +276,10 @@ export const AjustesSistema: React.FC<PropsAjustes> = ({ tabInicial = 'backup' }
   };
 
   // GUARDAR DATOS DE LA EMPRESA
-  const handleSaveCompany = (e: React.FormEvent) => {
+  const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('sendavac_empresa', JSON.stringify(company));
-    success('¡Configuración Guardada!', 'Datos comerciales y logotipo de la empresa actualizados correctamente');
+    await actualizarEmpresa(company);
+    success('¡Configuración Guardada!', 'Datos comerciales y logotipo sincronizados en la nube correctamente');
   };
 
   // GUARDAR / CREAR USUARIO

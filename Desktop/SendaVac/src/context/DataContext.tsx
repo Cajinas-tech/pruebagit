@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Empleado, SolicitudVacaciones } from '../types';
+import { Empleado, SolicitudVacaciones, EmpresaInfo } from '../types';
 import { calcularVacacionesNica } from '../utils/calculosNica';
 import { db, isConfigValid } from '../firebase';
 import {
@@ -13,9 +13,20 @@ import {
   runTransaction
 } from 'firebase/firestore';
 
+export const EMPRESA_DEFAULT: EmpresaInfo = {
+  nombreComercial: 'ElectroRax',
+  ruc: '2432105800000U',
+  telefono: '+505 8505 9284',
+  email: 'jairotten84@gmail.com',
+  direccion: 'Managua, Nicaragua, Villa Sol Casa E8-23',
+  logo: '/images/logo/electrorax-logo.png'
+};
+
 interface DataContextType {
   empleados: Empleado[];
   solicitudes: SolicitudVacaciones[];
+  empresa: EmpresaInfo;
+  actualizarEmpresa: (datos: EmpresaInfo) => Promise<void>;
   cargando: boolean;
   modoFirebaseReal: boolean;
   notificacionesPendientes: number;
@@ -177,6 +188,20 @@ const SOLICITUDES_INICIALES: SolicitudVacaciones[] = [
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [solicitudes, setSolicitudes] = useState<SolicitudVacaciones[]>([]);
+  const [empresa, setEmpresa] = useState<EmpresaInfo>(() => {
+    const stored = localStorage.getItem('sendavac_empresa');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.nombreComercial && parsed.nombreComercial !== 'SENDA SISTEMAS') {
+          return parsed;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return EMPRESA_DEFAULT;
+  });
   const [cargando, setCargando] = useState<boolean>(true);
   const [modoFirebaseReal, setModoFirebaseReal] = useState<boolean>(false);
 
@@ -270,10 +295,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setSolicitudes(items);
           });
 
+          // Escuchador en tiempo real de Datos de Empresa en Firestore
+          const unsubEmpresa = onSnapshot(doc(db, "configuracion", "empresa"), (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data() as EmpresaInfo;
+              setEmpresa(data);
+              try {
+                localStorage.setItem('sendavac_empresa', JSON.stringify(data));
+              } catch (e) {}
+            }
+          });
+
           setCargando(false);
           return () => {
             unsubEmp();
             unsubSol();
+            unsubEmpresa();
           };
         } catch (error) {
           console.warn("Error conectando a Firestore, cargando modo local seguro:", error);
@@ -505,6 +542,21 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     guardarLocal(nuevosEmpleados, nuevasSolicitudes);
   };
 
+  const actualizarEmpresa = async (datos: EmpresaInfo): Promise<void> => {
+    setEmpresa(datos);
+    try {
+      localStorage.setItem('sendavac_empresa', JSON.stringify(datos));
+    } catch (e) {}
+
+    if (modoFirebaseReal && db) {
+      try {
+        await setDoc(doc(db, "configuracion", "empresa"), datos, { merge: true });
+      } catch (err) {
+        console.error("Error guardando empresa en Firestore:", err);
+      }
+    }
+  };
+
   const recargarDatos = async () => {
     cargarDesdeLocalStorage();
   };
@@ -516,6 +568,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         empleados,
         solicitudes,
+        empresa,
+        actualizarEmpresa,
         cargando,
         modoFirebaseReal,
         notificacionesPendientes,

@@ -53,9 +53,10 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
   empleado,
   solicitudes
 }) => {
-  const { solicitudes: solicitudesContext } = useData();
+  const { solicitudes: solicitudesContext, empresa } = useData();
 
   const empresaInfo: EmpresaInfo = useMemo(() => {
+    if (empresa) return empresa;
     try {
       const saved = localStorage.getItem('sendavac_empresa');
       if (saved) return JSON.parse(saved);
@@ -63,13 +64,14 @@ export const ModalHistorialDescansos: React.FC<ModalHistorialDescansosProps> = (
       console.error(e);
     }
     return {
-      nombreComercial: 'SENDA SISTEMAS',
-      ruc: 'J0310000012345',
+      nombreComercial: 'ElectroRax',
+      ruc: '2432105800000U',
       telefono: '+505 8505 9284',
       email: 'jairotten84@gmail.com',
-      direccion: 'Managua, Nicaragua'
+      direccion: 'Managua, Nicaragua',
+      logo: '/images/logo/electrorax-logo.png'
     };
-  }, []);
+  }, [empresa]);
 
   // Estados de Filtros
   const [tipoFiltro, setTipoFiltro] = useState<TipoDescansoHistorial | 'TODOS'>('TODOS');
